@@ -25,10 +25,6 @@ class Node
       return nil
     end
   end
-
-  #def <=>(other_node)
-  #  @value <=> other_node.value
-  #end
 end
 
 class Tree
@@ -245,30 +241,105 @@ class Tree
   def height(node)
     nodes = {node.value => [0, nil]}
     tmp = node
-    queue = []
-    while tmp != nil || !queue.empty?
+    queue = [tmp]
+    while !queue.empty?
       if tmp != nil
-        nodes[tmp.left_child.value] = [nodes[tmp.value][0] + 1, tmp]
-        nodes[tmp.right_child.value] = [nodes[tmp.value][0] + 1, tmp]
-        queue.push(tmp.left_child, tmp.right_child)
+        nodes[tmp.left_child.value] = [nodes[tmp.value][0] + 1, tmp] unless tmp.left_child == nil
+        nodes[tmp.right_child.value] = [nodes[tmp.value][0] + 1, tmp] unless tmp.right_child == nil
+        queue.push tmp.left_child unless tmp.left_child == nil# || nodes.has_key?(tmp.left_child.value)
+        queue.push tmp.right_child unless tmp.right_child == nil# || nodes.has_key?(tmp.right_child.value)
+        tmp = queue.pop
+      else
+        tmp = queue.pop
       end
     end
+    max = 0
+    nodes.each_key do |k|
+      if nodes[k][0] > max
+        max = nodes[k][0]
+      end
+    end
+    max
+  end
+
+  def depth(node)
+    tmp = @root
+    count = 0
+    until tmp.value == node.value
+      if node.value < tmp.value
+        tmp = tmp.left_child
+      else
+        tmp = tmp.right_child
+      end
+      count += 1
+    end
+    count
+  end
+
+  def balanced?
+    tmp = @root
+    stack = [tmp]
+
+    until stack.empty?
+      tmp = stack.pop
+      if tmp.is_leaf
+        next
+      elsif tmp.left_child == nil
+        return false if height(tmp.right_child) >= 1
+      elsif tmp.right_child == nil
+        return false if height(tmp.left_child) >= 1
+      else
+        difference = height(tmp.left_child) - height(tmp.right_child)
+        return false if difference.abs > 1
+        stack.push tmp.left_child unless tmp.left_child == nil
+        stack.push tmp.right_child unless tmp.right_child == nil
+      end
+    end
+    true
+  end
+
+  def rebalance
+    arr = inorder
+    arr = arr.uniq.sort
+    @root = build_tree(arr, 0, arr.length - 1)
   end
 end
 
-arr = [1, 7, 4, 23, 8, 9, 4, 3, 13,15,24,34,39, 5, 7, 9, 67, 6345, 324]
+#Driver script
+
+arr = Array.new(20) { rand(1..100) }
+puts arr
 
 tree = Tree.new(arr)
+puts "Initial array: "
 p arr.uniq.sort
+puts "\nInitial tree:\n"
 tree.pretty_print
-tree.insert(2)
-tree.pretty_print
-tree.delete(4)
-puts 'level order: '
+puts "\nTree balanced?: #{tree.balanced?}\n"
+puts "\nLevel order: \n"
 p tree.level_order
-puts 'inorder:'
-p tree.inorder
-puts 'preorder:'
+puts "\nPreorder Traversal: \n"
 p tree.preorder
-puts 'postorder: '
+puts "\nInorder Traversal: \n"
+p tree.inorder
+puts "\nPostorder Traversal: \n"
+p tree.postorder
+
+arr = Array.new(15) { rand(100..200) }
+arr.each { |i| tree.insert i }
+
+puts "\nInserting elements: #{arr.inspect}\n"
+tree.pretty_print
+puts "\nTree balanced?: #{tree.balanced?}\n"
+puts "\nRebalancing...\n"
+tree.rebalance
+tree.pretty_print
+puts "\nTree balanced?: #{tree.balanced?}\n"
+puts "\nLevel order: \n"
+p tree.level_order
+puts "\nPreorder Traversal: \n"
+p tree.preorder
+puts "\nInorder Traversal: \n"
+p tree.inorder
+puts "\nPostorder Traversal: \n"
 p tree.postorder
