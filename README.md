@@ -1,7 +1,7 @@
 # binary_search_tree
 
-BST built as part of the curriculum for The Odin Project.
-Methods:
+BST built as part of the curriculum for The Odin Project.\n
+Methods:\n
 #build_tree
   -Accepts array of values, returns root node of BST
 #insert
